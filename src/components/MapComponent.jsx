@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useHawkerCentres } from "../hooks/useHawkerCentres";
 import HawkerCentreMarker from "./HawkerCentreMarker";
 
-const MapComponent = () => {
-  const { hawkerCentres = [], loading, error } = useHawkerCentres();
+const MapComponent = ({
+  hawkerCentres = [],
+  loading = false,
+  error = null,
+}) => {
   const [flashMessage, setFlashMessage] = useState("");
 
   // Default position: center of Singapore
@@ -17,6 +19,7 @@ const MapComponent = () => {
       return;
     }
 
+    // Display API errors as a toast message while keeping the map visible
     setFlashMessage(`Unable to load hawker centres. ${error.message}`);
 
     const timeoutId = setTimeout(() => {
