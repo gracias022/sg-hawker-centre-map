@@ -11,7 +11,8 @@ const AutoFitBounds = ({ markerPositions }) => {
       return;
     }
 
-    // Debounce fit/setView to avoid camera jitter while users type filters quickly.
+    // Add debounce to reduce jumpines when rapid typing in search bar
+    // causes quick successive updates to marker positions
     const timeoutId = setTimeout(() => {
       if (markerPositions.length === 1) {
         map.setView(markerPositions[0], 15, { animate: true });
@@ -38,7 +39,7 @@ const MapComponent = ({
 }) => {
   const [flashMessage, setFlashMessage] = useState("");
 
-  // Derive valid [lat, lng] points once for bounds fitting and marker rendering.
+  // Derive valid [lat, lng] points once for bounds fitting and marker rendering
   const markerPositions = useMemo(() => {
     return hawkerCentres
       .map((centre) => {
