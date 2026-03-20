@@ -1,7 +1,7 @@
 const HawkerCentreFilter = ({ regions = [], value, onChange }) => {
   return (
     <label className="region-filter" htmlFor="region-filter-select">
-      <span>Region</span>
+      <span className="filter-label">Select Region</span>
       <select
         id="region-filter-select"
         value={value}
