@@ -62,7 +62,7 @@ const MapComponent = ({
   loading = false,
   error = null,
 }) => {
-  const [flashMessage, setFlashMessage] = useState("");
+  const [dismissedFlashMessage, setDismissedFlashMessage] = useState("");
 
   // Derive valid [lat, lng] points once for bounds fitting and marker rendering
   const markerPositions = useMemo(() => {
@@ -84,31 +84,34 @@ const MapComponent = ({
   // Default position: center of Singapore
   const position = [1.3521, 103.8198];
 
+  const flashMessage = error
+    ? `Unable to load hawker centres. ${error.message}`
+    : "";
+  const isFlashVisible =
+    Boolean(flashMessage) && dismissedFlashMessage !== flashMessage;
+
   useEffect(() => {
-    if (!error) {
-      setFlashMessage("");
+    if (!isFlashVisible) {
       return;
     }
 
-    // Display API errors as a toast message while keeping the map visible
-    setFlashMessage(`Unable to load hawker centres. ${error.message}`);
-
+    // Auto-dismiss the current flash message after a short delay
     const timeoutId = setTimeout(() => {
-      setFlashMessage("");
+      setDismissedFlashMessage(flashMessage);
     }, 5000);
 
     return () => clearTimeout(timeoutId);
-  }, [error]);
+  }, [flashMessage, isFlashVisible]);
 
   return (
     <section className="map-layout">
-      {flashMessage && (
+      {isFlashVisible && (
         <div className="map-toast" role="status" aria-live="polite">
           <span>{flashMessage}</span>
           <button
             type="button"
             className="map-toast-close"
-            onClick={() => setFlashMessage("")}
+            onClick={() => setDismissedFlashMessage(flashMessage)}
             aria-label="Dismiss notification"
           >
             x

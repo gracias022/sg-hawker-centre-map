@@ -12,8 +12,21 @@ const HawkerCentreMarker = ({
 
   // GeoJSON hawker centre coordinates are [longitude, latitude]
   const [longitude, latitude] = coordinates;
+  const hasValidCoordinates =
+    Number.isFinite(latitude) && Number.isFinite(longitude);
 
-  if (isNaN(latitude) || isNaN(longitude)) {
+  // Open popup when this marker is selected from suggestions list
+  useEffect(() => {
+    if (!hasValidCoordinates) {
+      return;
+    }
+
+    if (isSelected && markerRef.current) {
+      markerRef.current.openPopup();
+    }
+  }, [hasValidCoordinates, isSelected, selectionSignal]);
+
+  if (!hasValidCoordinates) {
     // Handle cases where coordinates are missing or invalid
     return null;
   }
@@ -31,13 +44,6 @@ const HawkerCentreMarker = ({
       .join(", ");
 
   const photoUrl = properties.PHOTOURL;
-
-  // Open popup when this marker is selected from suggestions list
-  useEffect(() => {
-    if (isSelected && markerRef.current) {
-      markerRef.current.openPopup();
-    }
-  }, [isSelected, selectionSignal]);
 
   return (
     <Marker position={position} ref={markerRef}>
