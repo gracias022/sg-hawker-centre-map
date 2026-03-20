@@ -1,7 +1,35 @@
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { useEffect, useMemo, useState } from "react";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import HawkerCentreMarker from "./HawkerCentreMarker";
+
+const AutoFitBounds = ({ markerPositions }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!markerPositions.length) {
+      return;
+    }
+
+    // Debounce fit/setView to avoid camera jitter while users type filters quickly.
+    const timeoutId = setTimeout(() => {
+      if (markerPositions.length === 1) {
+        map.setView(markerPositions[0], 15, { animate: true });
+        return;
+      }
+
+      map.fitBounds(markerPositions, {
+        padding: [40, 40],
+        maxZoom: 15,
+        animate: true,
+      });
+    }, 200);
+
+    return () => clearTimeout(timeoutId);
+  }, [map, markerPositions]);
+
+  return null;
+};
 
 const MapComponent = ({
   hawkerCentres = [],
@@ -9,6 +37,23 @@ const MapComponent = ({
   error = null,
 }) => {
   const [flashMessage, setFlashMessage] = useState("");
+
+  // Derive valid [lat, lng] points once for bounds fitting and marker rendering.
+  const markerPositions = useMemo(() => {
+    return hawkerCentres
+      .map((centre) => {
+        const coordinates = centre?.geometry?.coordinates ?? [];
+        const longitude = coordinates[0];
+        const latitude = coordinates[1];
+
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+          return null;
+        }
+
+        return [latitude, longitude];
+      })
+      .filter(Boolean);
+  }, [hawkerCentres]);
 
   // Default position: center of Singapore
   const position = [1.3521, 103.8198];
@@ -59,6 +104,9 @@ const MapComponent = ({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+
+          {!loading && <AutoFitBounds markerPositions={markerPositions} />}
+
           {!loading &&
             hawkerCentres.map((centre, idx) => (
               <HawkerCentreMarker
