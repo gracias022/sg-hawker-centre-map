@@ -1,6 +1,13 @@
 import { IoClose } from "react-icons/io5";
+import SuggestionsList from "./SuggestionsList";
 
-const SearchBar = ({ value, onChange }) => {
+const SearchBar = ({
+  value,
+  onChange,
+  suggestions = [],
+  onSelectSuggestion,
+  isSuggestionVisible,
+}) => {
   // Boolean flag controls clear button visibility
   const hasValue = value.trim().length > 0;
 
@@ -14,6 +21,7 @@ const SearchBar = ({ value, onChange }) => {
           placeholder="Search name of hawker centre..."
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          autoComplete="off"
         />
         {hasValue && (
           <button
@@ -25,6 +33,11 @@ const SearchBar = ({ value, onChange }) => {
             <IoClose aria-hidden="true" size={16} />
           </button>
         )}
+        <SuggestionsList
+          suggestions={suggestions}
+          isOpen={isSuggestionVisible}
+          onSelect={onSelectSuggestion}
+        />
       </div>
     </label>
   );

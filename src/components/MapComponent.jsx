@@ -32,8 +32,33 @@ const AutoFitBounds = ({ markerPositions }) => {
   return null;
 };
 
+const FlyToSelected = ({ selectedCentre, selectionSignal }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!selectedCentre) {
+      return;
+    }
+
+    const coordinates = selectedCentre?.geometry?.coordinates ?? [];
+    const longitude = coordinates[0];
+    const latitude = coordinates[1];
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return;
+    }
+
+    // Fly to the selected centre (popup opens via HawkerCentreMarker's isSelected prop)
+    map.flyTo([latitude, longitude], 17, { animate: true, duration: 1 });
+  }, [map, selectedCentre, selectionSignal]);
+
+  return null;
+};
+
 const MapComponent = ({
   hawkerCentres = [],
+  selectedCentre = null,
+  selectionSignal = 0,
   loading = false,
   error = null,
 }) => {
@@ -107,12 +132,23 @@ const MapComponent = ({
           />
 
           {!loading && <AutoFitBounds markerPositions={markerPositions} />}
+          {!loading && (
+            <FlyToSelected
+              selectedCentre={selectedCentre}
+              selectionSignal={selectionSignal}
+            />
+          )}
 
           {!loading &&
             hawkerCentres.map((centre, idx) => (
               <HawkerCentreMarker
                 key={centre?.properties?.OBJECTID || idx}
                 centre={centre}
+                isSelected={
+                  selectedCentre?.properties?.OBJECTID ===
+                  centre?.properties?.OBJECTID
+                }
+                selectionSignal={selectionSignal}
               />
             ))}
         </MapContainer>

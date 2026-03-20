@@ -9,6 +9,9 @@ import { useHawkerCentres } from "./hooks/useHawkerCentres";
 function App() {
   const [searchText, setSearchText] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedCentre, setSelectedCentre] = useState(null);
+  const [selectionSignal, setSelectionSignal] = useState(0);
+  const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
   const { hawkerCentres = [], loading, error } = useHawkerCentres();
 
   // Retrieve regions from hawker centre data for dropdown filter
@@ -38,6 +41,19 @@ function App() {
     });
   }, [hawkerCentres, searchText, selectedRegion]);
 
+  const handleSearchChange = (nextValue) => {
+    setSearchText(nextValue);
+    setIsSuggestionVisible(nextValue.trim().length > 0);
+  };
+
+  const handleSelectSuggestion = (centre) => {
+    setSelectedCentre(centre);
+    // Incrementing this signal lets us re-open the same centre's popup on repeated selection
+    setSelectionSignal((current) => current + 1);
+    setSearchText(centre?.properties?.NAME ?? "");
+    setIsSuggestionVisible(false);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -46,7 +62,13 @@ function App() {
       <main className="App-main">
         <section className="app-content">
           <section className="filters-row">
-            <SearchBar value={searchText} onChange={setSearchText} />
+            <SearchBar
+              value={searchText}
+              onChange={handleSearchChange}
+              suggestions={filteredCentres}
+              onSelectSuggestion={handleSelectSuggestion}
+              isSuggestionVisible={isSuggestionVisible}
+            />
             <HawkerCentreFilter
               regions={availableRegions}
               value={selectedRegion}
@@ -61,6 +83,8 @@ function App() {
 
           <MapComponent
             hawkerCentres={filteredCentres}
+            selectedCentre={selectedCentre}
+            selectionSignal={selectionSignal}
             loading={loading}
             error={error}
           />
