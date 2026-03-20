@@ -79,7 +79,7 @@
 .map-panel {
   width: min(980px, 100%);
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
 }
 
