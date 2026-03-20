@@ -1,6 +1,13 @@
+import { useEffect, useRef } from "react";
 import { Marker, Popup, Tooltip } from "react-leaflet";
 
-const HawkerCentreMarker = ({ centre }) => {
+const HawkerCentreMarker = ({
+  centre,
+  isSelected = false,
+  selectionSignal = 0,
+}) => {
+  const popupRef = useRef(null);
+  const markerRef = useRef(null);
   const coordinates = centre?.geometry?.coordinates ?? [];
 
   // GeoJSON hawker centre coordinates are [longitude, latitude]
@@ -25,8 +32,15 @@ const HawkerCentreMarker = ({ centre }) => {
 
   const photoUrl = properties.PHOTOURL;
 
+  // Open popup when this marker is selected from suggestions list
+  useEffect(() => {
+    if (isSelected && markerRef.current) {
+      markerRef.current.openPopup();
+    }
+  }, [isSelected, selectionSignal]);
+
   return (
-    <Marker position={position}>
+    <Marker position={position} ref={markerRef}>
       {/* Hover functionality*/}
       <Tooltip direction="top" offset={[-15, -20]}>
         <strong>{name}</strong>
@@ -34,6 +48,7 @@ const HawkerCentreMarker = ({ centre }) => {
 
       {/* Click-to-view functionality*/}
       <Popup
+        ref={popupRef}
         autoPan={true}
         autoPanPadding={[50, 50]}
         keepInView={true}
@@ -48,6 +63,7 @@ const HawkerCentreMarker = ({ centre }) => {
             <img
               src={photoUrl}
               alt={name}
+              onLoad={() => popupRef.current?.update()}
               style={{
                 display: "block",
                 width: "100%",
